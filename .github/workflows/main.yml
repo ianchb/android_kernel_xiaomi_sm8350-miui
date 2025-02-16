@@ -22,10 +22,16 @@ jobs:
           sudo apt install -y clang lld python2 llvm git make gcc flex bison bc libssl-dev ccache libncurses5-dev libncursesw5-dev libtinfo5 cmake python3
       - name: Build Project
         run: | 
+          git clone https://github.com/tomxi1997/lxc-docker-support-for-android utils
+          echo 'source "utils/Kconfig"' >> Kconfig
+          sh utils/runcpatch.sh kernel/cgroup/cgroup.c
+          echo "CONFIG_DOCKER=y" >> arch/arm64/configs/vendor/lahaina-qgki_defconfig
+          sed -i '/CONFIG_ANDROID_PARANOID_NETWORK/d' arch/arm64/configs/vendor/lahaina-qgki_defconfig
+          echo "# CONFIG_ANDROID_PARANOID_NETWORK is not set" >> arch/arm64/configs/vendor/lahaina-qgki_defconfig
           chmod +x ./build.sh
           ./build.sh all renoir
       - name: Compress
-        run: tar -czvf build.tar.gz ../out
+        run: tar -czvf build.tar.gz ../out/anykernel
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
